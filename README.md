@@ -4,8 +4,42 @@ Dead simple Golang OTP (One Time Password) library for both HOTP and TOTP withou
 ## TOTP
 A time-based OTP, using the time for the message validation.
 
+```go
+secret := entica.RandSecret() // base32 string (A-Z and 2-7) with length of 32 chars
+totp := entica.NewTOTP(secret) // new default totp (sha1) with 6 digit result
+totp.Get() // 918399
+
+// or with more specific
+
+secret := "IDI5FG3XTZE26AONPVRIVQP4DN2DV54J"
+totp := entica.NewTOTPSHA(7, sha512.New, secret)
+totp.Get() // 9183993
+
+totp.Compare("codeToCheck") // return valid status
+totp.At(time.Now().Sub(time.Hour * 3)) // return code at specific time, 3 hours earlier
+totp.CodeAtUnix(1646373) // return code at specific unix time
+```
+
 ## HOTP
 HMAC-Based OTP, using the counter value for the message validation.
+
+```go
+secret := entica.RandSecret("SomeSalt")
+hotp := entica.HOTP{
+    Hash: entica.Sha1,
+    Digits: 6,
+    Secret: secret,  // 32bit string secret
+    Counter: 1,
+}
+
+// or
+
+hotp := entica.NewDefaultHOTP(secret, counter)
+
+hotp.Check("codeToCheck") // return code at current time
+hotp.CodeAtCounter(10) // return code at specific counter value 
+hotp.CurrCounter() // return counter value 
+```
 
 ## LICENSE
 MIT License
